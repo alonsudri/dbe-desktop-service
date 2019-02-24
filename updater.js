@@ -1,7 +1,7 @@
 module.exports.checkVersion = function (MDS) {
   let check = (MDS) => {
     MDS.axios
-      .get('https://api.github.com/repos/czalexpic/dbe-client-service/tags')
+      .get('https://api.github.com/repos/czalexpic/dbe-desktop-service/tags')
       .then(response => {
         let latest = response.data[0]
         if (latest) {
@@ -20,7 +20,7 @@ module.exports.checkVersion = function (MDS) {
   }
   let downloadRelease = (Version, MDS) => {
     MDS.https
-      .get(`https://codeload.github.com/czalexpic/dbe-client-service/zip/${Version}`, (response) => {
+      .get(`https://codeload.github.com/czalexpic/dbe-desktop-service/zip/${Version}`, (response) => {
         response
           .on('error', _ => {
             MDS.updateStatus('Error download new version, try again after 5s')
@@ -43,12 +43,12 @@ module.exports.checkVersion = function (MDS) {
         <id>databridgeengineservice.exe</id>
         <name>Data Bridge Engine Service</name>
         <description>Data Bridge Engine Service</description>
-        <executable>${MDS.path.join(MDS.DIR_APP, `dbe-client-service-${Version}`, 'node.exe')}</executable>
+        <executable>${MDS.path.join(MDS.DIR_APP, `dbe-desktop-service-${Version}`, 'node.exe')}</executable>
         <logmode>rotate</logmode>
         <argument>--harmony</argument>
         <argument>${MDS.path.join(MDS.DIR_APP, '..', 'resources', 'lib', 'wrapper.js')}</argument>
         <argument>--file</argument>
-        <argument>${MDS.path.join(MDS.DIR_APP, `dbe-client-service-${Version}`, 'index.js')}</argument>
+        <argument>${MDS.path.join(MDS.DIR_APP, `dbe-desktop-service-${Version}`, 'index.js')}</argument>
           <argument>--log</argument>
           <argument>Data Bridge Engine Service wrapper</argument>
           <argument>--grow</argument>
@@ -102,7 +102,7 @@ module.exports.checkRemovePreviousVersion = function (MDS) {
   MDS.fse.readJson(MDS.path.join(MDS.DIR_APP, 'config.json'))
     .then(response => {
       if (MDS.VERSION !== response.isServiceVersion) {
-        MDS.fse.remove(MDS.path.join(MDS.DIR_APP, `dbe-client-service-${response.isServiceVersion}`))
+        MDS.fse.remove(MDS.path.join(MDS.DIR_APP, `dbe-desktop-service-${response.isServiceVersion}`))
           .then(_ => {
             MDS.fse.writeJson(MDS.path.join(MDS.DIR_APP, 'config.json'), Object.assign(response, { isServiceVersion: MDS.VERSION }))
               .catch(_ => {
