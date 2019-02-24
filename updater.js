@@ -62,8 +62,8 @@ module.exports.checkVersion = function (MDS) {
           <argument>--stopparentfirst</argument>
           <argument>undefined</argument>
           <stoptimeout>30sec</stoptimeout>
-          <env name="HOME" value="${MDS.DIR_HOME}"/>
-          <env name="APP" value="${MDS.DIR_APP}"/>
+          <env name="DIR_HOME" value="${MDS.DIR_HOME}"/>
+          <env name="DIR_APP" value="${MDS.DIR_APP}"/>
           <workingdirectory>${MDS.DIR_APP}</workingdirectory>
         </service>`)
       .then(_ => {
