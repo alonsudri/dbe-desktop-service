@@ -52,7 +52,6 @@ const MDS = {
 }
 
 function ErrorConnected(e) {
-  console.log(e)
   if (allowReconnect) {
     allowReconnect = false
     console.log('websocket lost connect to', SERVER, 'reconnect after 5s')
