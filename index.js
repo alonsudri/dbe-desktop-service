@@ -22,7 +22,6 @@ const PROXY = process.env.PROXY
 const AGENT = (PROXY) ? new HttpsProxyAgent(url.parse(PROXY)) : null
 const updater = require('./updater')
 
-// :TODO MDS = MODULES
 let ws
 let allowReconnect = false
 
@@ -30,6 +29,7 @@ const updateStatus = function (Msg) {
   if (ws) ws.send(JSON.stringify({ msgType: 'onUpdateStatus', msg: Msg }))
 }
 
+// :TODO MDS = MODULES
 const MDS = {
   // constants
   SERVER: SERVER,
