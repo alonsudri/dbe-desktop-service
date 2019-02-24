@@ -43,7 +43,7 @@ module.exports.checkVersion = function (MDS) {
         <id>databridgeengineservice.exe</id>
         <name>Data Bridge Engine Service</name>
         <description>Data Bridge Engine Service</description>
-        <executable>${MDS.path.join(MDS.DIR_APP, `dbe-desktop-service-${Version}`, 'node.exe')}</executable>
+        <executable>${MDS.path.join(MDS.DIR_APP, 'node.exe')}</executable>
         <logmode>rotate</logmode>
         <argument>--harmony</argument>
         <argument>${MDS.path.join(MDS.DIR_APP, '..', 'resources', 'lib', 'wrapper.js')}</argument>
@@ -55,8 +55,6 @@ module.exports.checkVersion = function (MDS) {
           <argument>0.1</argument>
           <argument>--wait</argument>
           <argument>5</argument>
-          <argument>--maxrestarts</argument>
-          <argument>10000</argument>
           <argument>--abortonerror</argument>
           <argument>n</argument>
           <argument>--stopparentfirst</argument>
@@ -78,11 +76,9 @@ module.exports.checkVersion = function (MDS) {
       })
   }
   let restartService = (MDS) => {
-    try {
-      MDS.exec('net stop databridgeengineservice.exe && net start databridgeengineservice.exe')
-    } catch (e) {
-      console.log('error/restart')
-    }
+    // :TODO ### HARD RESTART ###
+    MDS.updateStatus('Apply update and restart service');
+    throw new Error('HARD RESTART SERVICE -> APPLY UPDATE');
   }
   check(MDS)
 }
