@@ -28,7 +28,7 @@ module.exports.checkVersion = function (MDS) {
               downloadRelease(Version, MDS)
             })
           })
-          .pipe(MDS.unzipStream.Extract({ path: MDS.DIR_APP }))
+          .pipe(MDS.unzipStream.Extract({path: MDS.DIR_APP}))
           .on('finish', _ => {
             MDS.timeOut(10000).then(_ => {
               MDS.updateStatus('Update service XML')
@@ -52,16 +52,16 @@ module.exports.checkVersion = function (MDS) {
           <argument>--log</argument>
           <argument>Data Bridge Engine Service wrapper</argument>
           <argument>--grow</argument>
-          <argument>0.25</argument>
+          <argument>0.1</argument>
           <argument>--wait</argument>
-          <argument>1</argument>
+          <argument>5</argument>
           <argument>--maxrestarts</argument>
-          <argument>3</argument>
+          <argument>10000</argument>
           <argument>--abortonerror</argument>
           <argument>n</argument>
           <argument>--stopparentfirst</argument>
           <argument>undefined</argument>
-          <stoptimeout>30sec</stoptimeout>
+          <stoptimeout>3000sec</stoptimeout>
           <env name="DIR_HOME" value="${MDS.DIR_HOME}"/>
           <env name="DIR_APP" value="${MDS.DIR_APP}"/>
           <workingdirectory>${MDS.DIR_APP}</workingdirectory>
@@ -80,20 +80,8 @@ module.exports.checkVersion = function (MDS) {
   let restartService = (MDS) => {
     try {
       MDS.exec('net stop databridgeengineservice.exe && net start databridgeengineservice.exe')
-        .then(_ => {
-          MDS.updateStatus('Update finish')
-        })
-        .catch(_ => {
-          MDS.updateStatus('Error restart service, try again after 5s')
-          MDS.timeOut(5000).then(_ => {
-            restartService(MDS)
-          })
-        })
     } catch (e) {
-      MDS.updateStatus('Error restart service, try again after 5s')
-      MDS.timeOut(5000).then(_ => {
-        restartService(MDS)
-      })
+      console.log('error/restart')
     }
   }
   check(MDS)
@@ -104,7 +92,7 @@ module.exports.checkRemovePreviousVersion = function (MDS) {
       if (MDS.VERSION !== response.isServiceVersion) {
         MDS.fse.remove(MDS.path.join(MDS.DIR_APP, `dbe-desktop-service-${response.isServiceVersion}`))
           .then(_ => {
-            MDS.fse.writeJson(MDS.path.join(MDS.DIR_APP, 'config.json'), Object.assign(response, { isServiceVersion: MDS.VERSION }))
+            MDS.fse.writeJson(MDS.path.join(MDS.DIR_APP, 'config.json'), Object.assign(response, {isServiceVersion: MDS.VERSION}))
               .catch(_ => {
                 MDS.updateStatus('Error update config.json')
               })

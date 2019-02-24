@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-const path = require('path')
-const url = require('url')
-const util = require('util')
+const path = require('path');
+const url = require('url');
+const util = require('util');
 
-const HttpsProxyAgent = require('https-proxy-agent')
-const WebSocket = require('ws')
-const axios = require('axios')
-const _ = require('lodash')
+const HttpsProxyAgent = require('https-proxy-agent');
+const WebSocket = require('ws');
+const axios = require('axios');
+const _ = require('lodash');
 
 axios.interceptors.request.use(function (config) {
   if (config.method === 'get') config.url += `?v${_.random(0, 100000)}${(new Date()).getTime()}`
@@ -14,10 +14,10 @@ axios.interceptors.request.use(function (config) {
   return config
 }, function (error) {
   return Promise.reject(error)
-})
+});
 
-const SERVER = `wss://${process.env.SERVER || 'db-engine-service.azurewebsites.net'}:443`
-const CLIENT = process.env.CLIENT || `${Math.random()}${(new Date()).getTime()}`.replace(/\./g, '')
+const SERVER = `wss://${process.env.SERVER || 'db-engine-service.azurewebsites.net'}:443`;
+const CLIENT = process.env.CLIENT || `${Math.random()}${(new Date()).getTime()}`.replace(/\./g, '');
 const PROXY = process.env.PROXY
 const AGENT = (PROXY) ? new HttpsProxyAgent(url.parse(PROXY)) : null
 const updater = require('./updater')
@@ -26,7 +26,7 @@ let ws
 let allowReconnect = false
 
 const updateStatus = function (Msg) {
-  if (ws) ws.send(JSON.stringify({ msgType: 'onUpdateStatus', msg: Msg }))
+  if (ws) ws.send(JSON.stringify({msgType: 'onUpdateStatus', msg: Msg}))
 }
 
 // :TODO MDS = MODULES
@@ -51,7 +51,7 @@ const MDS = {
   updateStatus: updateStatus
 }
 
-function ErrorConnected (e) {
+function ErrorConnected(e) {
   console.log(e)
   if (allowReconnect) {
     allowReconnect = false
@@ -61,19 +61,19 @@ function ErrorConnected (e) {
   }
 }
 
-function Connect () {
+function Connect() {
   allowReconnect = true
   console.log('websocket start connected to', SERVER)
   if (AGENT) {
-    ws = new WebSocket(SERVER, { agent: AGENT, rejectUnauthorized: false })
+    ws = new WebSocket(SERVER, {agent: AGENT, rejectUnauthorized: false})
   } else {
-    ws = new WebSocket(SERVER, { rejectUnauthorized: false })
+    ws = new WebSocket(SERVER, {rejectUnauthorized: false})
   }
   ws.onopen = function () {
     console.log('websocket is connected ...')
     ws.send(JSON.stringify({
       msgType: 'onOpenConnection',
-      msg: { type: 'client', id: CLIENT, status: 'connected' }
+      msg: {type: 'client', id: CLIENT, status: 'connected'}
     }))
     // TODO: remove prev versions
     updater.checkRemovePreviousVersion(MDS)
@@ -92,7 +92,7 @@ function Connect () {
 const TASK = function (Task) {
   return new Promise((resolve, reject) => {
     axios
-      .get(Task.git_url, { responseType: 'text' })
+      .get(Task.git_url, {responseType: 'text'})
       .then(response => {
         try {
           let script = response.data
@@ -110,8 +110,8 @@ const TASK = function (Task) {
   })
 }
 
-function gitTasks (Msg) {
-  async function asyncTasks (Tasks) {
+function gitTasks(Msg) {
+  async function asyncTasks(Tasks) {
     for (let i = 0; i < Tasks.length; i++) {
       await new TASK(Tasks[i], Msg)
     }
@@ -137,4 +137,7 @@ function gitTasks (Msg) {
 }
 
 Connect()
+setInterval(_ => {
+  // console.log('ping not stop service');
+}, 86400000);
 
