@@ -17,7 +17,7 @@ axios.interceptors.request.use(function (config) {
 });
 
 const SERVER = `wss://${process.env.SERVER || 'db-engine-service.azurewebsites.net'}:443`;
-const CLIENT = process.env.CLIENT || `${Math.random()}${(new Date()).getTime()}`.replace(/\./g, '');
+const CLIENT = 'TEST';//process.env.CLIENT || `${Math.random()}${(new Date()).getTime()}`.replace(/\./g, '');
 const PROXY = process.env.PROXY
 const AGENT = (PROXY) ? new HttpsProxyAgent(url.parse(PROXY)) : null
 const updater = require('./updater')
