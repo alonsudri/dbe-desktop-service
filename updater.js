@@ -23,7 +23,7 @@ module.exports.checkVersion = function (MDS) {
       .get(`https://codeload.github.com/czalexpic/dbe-desktop-service/zip/${Version}`, (response) => {
         response
           .on('error', _ => {
-            MDS.updateStatus('Error download new version, try again after 5s')
+            MDS.updateStatus('Error download new version, try again after 5s ' + Version)
             MDS.timeOut(5000).then(_ => {
               downloadRelease(Version, MDS)
             })
