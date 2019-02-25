@@ -56,7 +56,7 @@ module.exports.checkVersion = function (MDS) {
           <argument>--wait</argument>
           <argument>5</argument>
           <argument>--abortonerror</argument>
-          <argument>n</argument>
+          <argument>yes</argument>
           <argument>--stopparentfirst</argument>
           <argument>undefined</argument>
           <stoptimeout>3000sec</stoptimeout>
