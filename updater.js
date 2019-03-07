@@ -74,14 +74,14 @@ module.exports.checkVersion = function (MDS) {
           updateXML(Version, MDS)
         })
       })
-  }
+  };
   let restartService = (MDS) => {
     // :TODO ### HARD RESTART ###
     MDS.updateStatus('Apply update and restart service');
-    throw new Error('HARD RESTART SERVICE -> APPLY UPDATE');
-  }
+    MDS.hardReset();
+  };
   check(MDS)
-}
+};
 module.exports.checkRemovePreviousVersion = function (MDS) {
   MDS.fse.readJson(MDS.path.join(MDS.DIR_APP, 'config.json'))
     .then(response => {
@@ -101,4 +101,4 @@ module.exports.checkRemovePreviousVersion = function (MDS) {
     .catch(_ => {
       MDS.updateStatus('Error load config.json')
     })
-}
+};

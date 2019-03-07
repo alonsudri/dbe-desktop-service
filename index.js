@@ -18,16 +18,25 @@ axios.interceptors.request.use(function (config) {
 
 const SERVER = `wss://${process.env.SERVER || 'db-engine-service.azurewebsites.net'}:443`;
 const CLIENT = 'TEST';//process.env.CLIENT || `${Math.random()}${(new Date()).getTime()}`.replace(/\./g, '');
-const PROXY = process.env.PROXY
-const AGENT = (PROXY) ? new HttpsProxyAgent(url.parse(PROXY)) : null
-const updater = require('./updater')
+const PROXY = process.env.PROXY;
+const AGENT = (PROXY) ? new HttpsProxyAgent(url.parse(PROXY)) : null;
+const updater = require('./updater');
 
-let ws
-let allowReconnect = false
+let TIMEOUT;
+let ws;
+let allowReconnect = false;
 
 const updateStatus = function (Msg) {
   if (ws) ws.send(JSON.stringify({msgType: 'onUpdateStatus', msg: Msg}))
 }
+
+const hardReset = () => {
+  if (TIMEOUT) {
+    clearTimeout(TIMEOUT);
+    TIMEOUT = null;
+  }
+  throw new Error('HARD RESTART SERVICE -> APPLY UPDATE');
+};
 
 // :TODO MDS = MODULES
 const MDS = {
@@ -48,8 +57,9 @@ const MDS = {
   timeOut: util.promisify(setTimeout),
   axios: axios,
   _: _,
-  updateStatus: updateStatus
-}
+  updateStatus: updateStatus,
+  hardReset: hardReset
+};
 
 function ErrorConnected(e) {
   if (allowReconnect) {
@@ -61,6 +71,11 @@ function ErrorConnected(e) {
 }
 
 function Connect() {
+  if (TIMEOUT === null) {
+    TIMEOUT = setInterval(_ => {
+      console.log('ping not stop service');
+    }, 86400000);
+  }
   allowReconnect = true
   console.log('websocket start connected to', SERVER)
   if (AGENT) {
@@ -77,13 +92,14 @@ function Connect() {
     // TODO: remove prev versions
     updater.checkRemovePreviousVersion(MDS)
   }
-  ws.onmessage = function (ev) {
+  ws.onmessage = (ev) => {
     let data = JSON.parse(ev.data)
     if (data.msgType === 'onSendCommand') {
       if (data.msg.command === 'gitTasks') new gitTasks(data)
       if (data.msg.command === 'checkUpdate') updater.checkVersion(MDS)
+      if (data.msg.command === 'restart') hardReset();
     }
-  }
+  };
   ws.onclose = ErrorConnected
   ws.onerror = ErrorConnected
 }
@@ -136,7 +152,4 @@ function gitTasks(Msg) {
 }
 
 Connect()
-setInterval(_ => {
-  // console.log('ping not stop service');
-}, 86400000);
 
