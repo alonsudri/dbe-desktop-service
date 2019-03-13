@@ -13,9 +13,10 @@
     https: require('https'),
     exec: util.promisify(require('child_process').exec),
     timeOut: util.promisify(setTimeout),
+    fse: require('./node_modules/fs-extra'),
+    unzipStream: require('./node_modules/unzip-stream')
  * }
  */
-const WebSocket = require('./node_modules/ws');
 const axios = require('./node_modules/axios');
 const _ = require('./node_modules/lodash');
 
@@ -47,8 +48,6 @@ module.exports = function () {
     DIR_HOME: null,
     DIR_APP: null,
 
-    fse: require('./node_modules/fs-extra'),
-    unzipStream: require('./node_modules/unzip-stream'),
     axios: axios,
     _: _,
     updateStatus: updateStatus
@@ -134,7 +133,7 @@ module.exports = function () {
 
   this.connect = () => {
     allowReconnect = true;
-    ws = new WebSocket(MDS.SERVER, null, {rejectUnauthorized: false});
+    ws = new MDS.WebSocket(MDS.SERVER, null, {rejectUnauthorized: false});
     ws.onopen = function () {
       ws.send(JSON.stringify({
         msgType: 'onOpenConnection',

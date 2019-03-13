@@ -1,16 +1,13 @@
 {
   "name": "dbe-client-service",
-  "version": "0.1.28",
+  "version": "0.1.30",
   "description": "Source Data Bridge Engine Service",
   "main": "index.js",
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
-    "fs-extra": "^7.0.1",
     "lodash": "^4.17.11",
-    "node-cmd": "^3.0.0",
-    "unzip-stream": "^0.3.0",
-    "ws": "^6.1.3"
+    "node-cmd": "^3.0.0"
   }
 }
