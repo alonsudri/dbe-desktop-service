@@ -1,34 +1,15 @@
-#!/usr/bin/env node
-/**
- * @import {Object}
- * {
-    CLIENT: null,
-    DIR_HOME: process.env.DIR_HOME,
-    DIR_APP: process.env.DIR_APP,
-
-    path: path,
-    url: url,
-    util: util,
-    fs: require('fs'),
-    https: require('https'),
-    exec: util.promisify(require('child_process').exec),
-    timeOut: util.promisify(setTimeout),
-    fse: require('./node_modules/fs-extra'),
-    unzipStream: require('./node_modules/unzip-stream')
- * }
- */
-const axios = require('./node_modules/axios');
-const _ = require('./node_modules/lodash');
-
-axios.interceptors.request.use(function (config) {
-  if (config.method === 'get') config.url += `?v${_.random(0, 100000)}${(new Date()).getTime()}`;
-  console.log(config.url);
-  return config
-}, function (error) {
-  return Promise.reject(error)
-});
-
 module.exports = function () {
+  const axios = require('./node_modules/axios');
+  const _ = require('./node_modules/lodash');
+
+  axios.interceptors.request.use(function (config) {
+    if (config.method === 'get') config.url += `?v${_.random(0, 100000)}${(new Date()).getTime()}`;
+    console.log(config.url);
+    return config
+  }, function (error) {
+    return Promise.reject(error)
+  });
+
   let ws;
   let allowReconnect = false;
   let timeoutConnect;
