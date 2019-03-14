@@ -44,7 +44,7 @@ module.exports = function () {
       allowReconnect = false;
       ws = null;
       updateStatus(`websocket lost connect to ${MDS.SERVER} reconnect after 5s`);
-      callback({msgType: 'disconnect'});
+      callback({msgType: 'disconnect', msg: {}});
       timeoutConnect = setTimeout(this.connect, 5000);
     }
   };
@@ -61,7 +61,7 @@ module.exports = function () {
               reject('Service no need update');
             } else {
               resolve('Download service new version');
-              callback({msgType: 'updateTo', version: latest.name});
+              callback({msgType: 'updateTo', msg: {version: latest.name}});
             }
           } else {
             reject('Error update - error load release list');
@@ -120,7 +120,7 @@ module.exports = function () {
         msgType: 'onOpenConnection',
         msg: {type: 'client', id: MDS.CLIENT.customerID, status: 'connected', client: MDS.CLIENT}
       }));
-      callback({msgType: 'connect'});
+      callback({msgType: 'connect', msg: {}});
     };
     ws.onmessage = (ev) => {
       let data = JSON.parse(ev.data);
