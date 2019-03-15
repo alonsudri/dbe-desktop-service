@@ -1,15 +1,5 @@
 module.exports = function () {
-  const axios = require('./node_modules/axios');
   const HttpsProxyAgent = require('./node_modules/https-proxy-agent');
-  const _ = require('./node_modules/lodash');
-
-  axios.interceptors.request.use(function (config) {
-    if (config.method === 'get') config.url += `?v${_.random(0, 100000)}${(new Date()).getTime()}`;
-    console.log(config.url);
-    return config
-  }, function (error) {
-    return Promise.reject(error)
-  });
 
   let ws;
   let allowReconnect = false;
@@ -30,8 +20,6 @@ module.exports = function () {
     DIR_HOME: null,
     DIR_APP: null,
 
-    axios: axios,
-    _: _,
     updateStatus: updateStatus
   };
 
