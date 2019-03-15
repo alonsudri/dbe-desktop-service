@@ -1,5 +1,6 @@
 module.exports = function () {
   const axios = require('./node_modules/axios');
+  const HttpsProxyAgent = require('./node_modules/https-proxy-agent');
   const _ = require('./node_modules/lodash');
 
   axios.interceptors.request.use(function (config) {
@@ -114,7 +115,14 @@ module.exports = function () {
 
   this.connect = () => {
     allowReconnect = true;
-    ws = new MDS.WebSocket(MDS.SERVER, null, {rejectUnauthorized: false});
+    if (MDS.CLIENT.proxyURL) {
+      ws = new MDS.WebSocket(MDS.SERVER, null, {
+        agent: new HttpsProxyAgent(MDS.url.parse(MDS.CLIENT.proxyURL)),
+        rejectUnauthorized: false
+      });
+    } else {
+      ws = new MDS.WebSocket(MDS.SERVER, null, {rejectUnauthorized: false});
+    }
     ws.onopen = function () {
       ws.send(JSON.stringify({
         msgType: 'onOpenConnection',
