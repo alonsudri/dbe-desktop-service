@@ -1,6 +1,6 @@
 {
   "name": "dbe-client-service",
-  "version": "0.1.33",
+  "version": "0.1.34",
   "description": "Source Data Bridge Engine Service",
   "main": "index.js",
   "author": "",
