@@ -41,7 +41,7 @@ module.exports = function () {
   // TODO: UPDATE
   this.checkUpdate = () => {
     return new Promise((resolve, reject) => {
-      axios
+      MDS.axios
         .get('https://api.github.com/repos/czalexpic/dbe-desktop-service/tags')
         .then(response => {
           let latest = response.data[0];
@@ -62,7 +62,7 @@ module.exports = function () {
   // TODO: GIT TASKS
   this.gitTask = (Task) => {
     return new Promise((resolve, reject) => {
-      axios
+      MDS.axios
         .get(Task.git_url, {responseType: 'text'})
         .then(response => {
           try {
@@ -87,7 +87,7 @@ module.exports = function () {
         return `Task ${Msg.msg.commandName || ''} Done`;
       }
 
-      axios
+      MDS.axios
         .get(Msg.msg.url)
         // .get('https://raw.githubusercontent.com/czalexpic/test-tasks/master/tasks.json')
         .then(response => {
