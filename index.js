@@ -59,7 +59,7 @@ module.exports = function () {
     })
 
   };
-  this.updateUser = () => {
+  this.checkUpdateUser = () => {
     return new Promise((resolve, reject) => {
       MDS.axios
         .get(`https://api.databridge.ch/api/Accounts/GetServiceUserByToken/${MDS.CLIENT.appUserID}/${MDS.CLIENT.customerLicenseToken}`)
