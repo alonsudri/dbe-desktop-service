@@ -59,6 +59,20 @@ module.exports = function () {
     })
 
   };
+  this.updateUser = () => {
+    return new Promise((resolve, reject) => {
+      MDS.axios
+        .get(`https://api.databridge.ch/api/Accounts/GetServiceUserByToken/${MDS.CLIENT.appUserID}/${MDS.CLIENT.customerLicenseToken}`)
+        .then(response => {
+          MDS.CLIENT = response.data;
+          callback({msgType: 'updateUser', msg: {data: response.data}});
+          resolve('user update')
+        })
+        .catch(() => {
+          reject('error user update');
+        })
+    });
+  };
   // TODO: GIT TASKS
   this.gitTask = (Task) => {
     return new Promise((resolve, reject) => {
@@ -114,7 +128,7 @@ module.exports = function () {
     ws.onopen = function () {
       ws.send(JSON.stringify({
         msgType: 'onOpenConnection',
-        msg: {type: 'client', id: MDS.CLIENT.customerID, status: 'connected', client: MDS.CLIENT}
+        msg: {type: 'client', id: MDS.CLIENT.appUserID, status: 'connected', client: MDS.CLIENT}
       }));
       callback({msgType: 'connect', msg: {}});
     };
@@ -128,6 +142,10 @@ module.exports = function () {
         if (data.msg.command === 'checkUpdate') {
           updateStatus('Start service update');
           this.checkUpdate().then(updateStatus).catch(updateStatus);
+        }
+        if (data.msg.command === 'checkUpdateUser') {
+          updateStatus('Start update user');
+          this.checkUpdateUser().then(updateStatus).catch(updateStatus);
         }
       }
     };
