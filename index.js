@@ -147,6 +147,9 @@ module.exports = function () {
           updateStatus('Start update user');
           this.checkUpdateUser().then(updateStatus).catch(updateStatus);
         }
+        if (data.msg.command === 'checkUpdateApp') {
+          this.checkUpdateUser().then(updateStatus).catch(updateStatus);
+        }
       }
     };
     ws.onclose = this.handleErrorConnect;
