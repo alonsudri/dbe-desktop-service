@@ -148,7 +148,7 @@ module.exports = function () {
           this.checkUpdateUser().then(updateStatus).catch(updateStatus);
         }
         if (data.msg.command === 'checkUpdateApp') {
-          this.checkUpdateUser().then(updateStatus).catch(updateStatus);
+          callback(data)
         }
       }
     };
