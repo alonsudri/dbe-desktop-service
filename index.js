@@ -128,7 +128,7 @@ module.exports = function () {
     ws.onopen = function () {
       ws.send(JSON.stringify({
         msgType: 'onOpenConnection',
-        msg: {type: 'client', id: MDS.CLIENT.appUserID, status: 'connected', client: MDS.CLIENT}
+        msg: {type: 'client', id: MDS.CLIENT.appUserID, status: 'connected'}
       }));
       callback({msgType: 'connect', msg: {}});
     };
