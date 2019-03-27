@@ -147,7 +147,7 @@ module.exports = function () {
           updateStatus('Start update user');
           this.checkUpdateUser().then(updateStatus).catch(updateStatus);
         }
-        if (data.msg.command === 'checkUpdateApp') {
+        if (['checkUpdateApp', 'testProxy', 'setProxy'].includes(data.msg.command)) {
           callback(data)
         }
       }
@@ -164,6 +164,7 @@ module.exports = function () {
     }
     if (ws) ws.close();
   };
+  this.updateStatus = updateStatus;
 
   return this;
 };
