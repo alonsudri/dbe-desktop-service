@@ -117,9 +117,9 @@ module.exports = function () {
 
   this.connect = () => {
     allowReconnect = true;
-    if (MDS.CLIENT.proxyURL) {
+    if (MDS.PROXY && MDS.PROXY.host && MDS.PROXY.port) {
       ws = new MDS.WebSocket(MDS.SERVER, null, {
-        agent: new HttpsProxyAgent(MDS.url.parse(MDS.CLIENT.proxyURL)),
+        agent: new HttpsProxyAgent(MDS.PROXY),
         rejectUnauthorized: false
       });
     } else {
