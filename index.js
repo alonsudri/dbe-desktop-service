@@ -1,8 +1,29 @@
-module.exports = function () {
-  const HttpsProxyAgent = require('./node_modules/https-proxy-agent');
+const path = require('path');
+const fs = require('fs');
+const net = require('net');
+const https = require('https');
+const util = require('util');
+const url = require('url');
+const exec = util.promisify(require('child_process').exec);
+const timeOut = util.promisify(setTimeout);
+// additions modules
+const HttpsProxyAgent = require('./node_modules/https-proxy-agent');
+const axios = require('./node_modules/axios');
+const axiosHttpsProxy = require('./node_modules/axios-https-proxy');
+const WebSocket = require('./node_modules/ws');
+const fse = require('./node_modules/fs-extra');
+const unzipStream = require('./node_modules/unzip-stream');
+const lodash = require('./node_modules/lodash');
 
+// axios.interceptors.request.use(axiosHttpsProxy);
+// function setProxy() {
+//   axios.defaults.proxy = (props.proxy.data && props.proxy.data.host && props.proxy.data.port) ? props.proxy.data : false
+// }
+
+module.exports = function () {
   let ws;
   let allowReconnect = false;
+  let isConnected = false;
   let timeoutConnect;
   let callback;
 
@@ -20,6 +41,18 @@ module.exports = function () {
     DIR_HOME: null,
     DIR_APP: null,
 
+    path: path,
+    url: url,
+    util: util,
+    fs: fs,
+    https: https,
+    exec: exec,
+    timeOut: timeOut,
+    fse: fse,
+    axios: axios,
+    _: lodash,
+    unzipStream: unzipStream,
+
     updateStatus: updateStatus
   };
 
@@ -28,7 +61,12 @@ module.exports = function () {
     Object.assign(MDS, Mds);
     this.connect();
   };
+  this.status = function () {
+    callback({type: 'app', msgType: 'isServiceConnect', msg: isConnected});
+  };
   this.handleErrorConnect = () => {
+    callback({type: 'app', msgType: 'isServiceConnect', msg: false});
+    isConnected = false;
     if (allowReconnect) {
       allowReconnect = false;
       ws = null;
@@ -39,45 +77,30 @@ module.exports = function () {
   };
 
   // TODO: UPDATE
-  this.checkUpdate = () => {
-    return new Promise((resolve, reject) => {
-      MDS.axios
-        .get('https://api.github.com/repos/czalexpic/dbe-desktop-service/tags')
-        .then(response => {
-          let latest = response.data[0];
-          if (latest) {
-            if (latest.name === MDS.VERSION) {
-              reject('Service no need update');
-            } else {
-              resolve('Download service new version');
-              callback({msgType: 'updateTo', msg: {version: latest.name}});
-            }
-          } else {
-            reject('Error update - error load release list');
-          }
-        })
-    })
-
-  };
   this.checkUpdateUser = () => {
-    return new Promise((resolve, reject) => {
-      MDS.axios
-        .get(`https://api.databridge.ch/api/Accounts/GetServiceUserByToken/${MDS.CLIENT.appUserID}/${MDS.CLIENT.customerLicenseToken}`)
-        .then(response => {
-          MDS.CLIENT = response.data;
-          callback({msgType: 'updateUser', msg: {data: response.data}});
-          resolve('user update')
-        })
-        .catch(() => {
-          reject('error user update');
-        })
-    });
+    axios
+      .get(`https://api.databridge.ch/api/Accounts/GetServiceUserByToken/${MDS.CLIENT.appUserID}/${MDS.CLIENT.customerLicenseToken}`)
+      .then(response => {
+        MDS.CLIENT = response.data;
+        updateStatus('user update')
+        callback({type: 'app', msgType: 'updateUser', msg: {data: response.data}});
+        callback({type: 'local', msgType: 'restart'});
+      })
+      .catch(() => {
+        updateStatus('error user update');
+      })
   };
   // TODO: GIT TASKS
   this.gitTask = (Task) => {
     return new Promise((resolve, reject) => {
-      MDS.axios
-        .get(Task.git_url, {responseType: 'text'})
+      console.log('Task');
+      console.log(Task.git_url);
+      let url = Task.git_url;
+      url += `${/\?token/gi.test(url) ? '&' : '?'}v=${(new Date()).getTime()}`;
+      console.log(url);
+      console.log('---');
+      axios
+        .get(url, {responseType: 'text'})
         .then(response => {
           try {
             let script = response.data;
@@ -101,8 +124,14 @@ module.exports = function () {
         return `Task ${Msg.msg.commandName || ''} Done`;
       }
 
-      MDS.axios
-        .get(Msg.msg.url)
+      console.log('Tasks');
+      console.log(Msg.msg.url);
+      let url = Msg.msg.url;
+      url += `${/\?token/gi.test(url) ? '&' : '?'}v=${(new Date()).getTime()}`;
+      console.log(url);
+      console.log('---');
+      axios
+        .get(url)
         // .get('https://raw.githubusercontent.com/czalexpic/test-tasks/master/tasks.json')
         .then(response => {
           asyncTasks(response.data, this)
@@ -114,16 +143,22 @@ module.exports = function () {
         })
     })
   };
-
+  this.response = (Msg) => {
+    if (Msg.text) {
+      updateStatus(Msg.text);
+    }
+  };
   this.connect = () => {
     allowReconnect = true;
+    isConnected = true;
+    callback({type: 'app', msgType: 'isServiceConnect', msg: true});
     if (MDS.PROXY && MDS.PROXY.host && MDS.PROXY.port) {
-      ws = new MDS.WebSocket(MDS.SERVER, null, {
+      ws = new WebSocket(MDS.SERVER, null, {
         agent: new HttpsProxyAgent(MDS.PROXY),
         rejectUnauthorized: false
       });
     } else {
-      ws = new MDS.WebSocket(MDS.SERVER, null, {rejectUnauthorized: false});
+      ws = new WebSocket(MDS.SERVER, null, {rejectUnauthorized: false});
     }
     ws.onopen = function () {
       ws.send(JSON.stringify({
@@ -140,15 +175,15 @@ module.exports = function () {
           this.gitTasks(data).then(updateStatus).catch(updateStatus);
         }
         if (data.msg.command === 'checkUpdate') {
-          updateStatus('Start service update');
-          this.checkUpdate().then(updateStatus).catch(updateStatus);
+          // updateStatus('Start service update');
+          callback({type: 'local', msgType: 'serviceDownload'})
         }
         if (data.msg.command === 'checkUpdateUser') {
           updateStatus('Start update user');
-          this.checkUpdateUser().then(updateStatus).catch(updateStatus);
+          this.checkUpdateUser();
         }
-        if (['checkUpdateApp', 'testProxy', 'setProxy'].includes(data.msg.command)) {
-          callback(data)
+        if (['checkUpdateApp'].includes(data.msg.command)) {
+          callback({type: 'app', msgType: 'checkUpdateApp'});
         }
       }
     };
@@ -158,6 +193,8 @@ module.exports = function () {
 
   this.destroy = () => {
     allowReconnect = false;
+    isConnected = false;
+    callback({type: 'app', msgType: 'isServiceConnect', msg: false});
     if (timeoutConnect) {
       clearTimeout(timeoutConnect);
       timeoutConnect = null;
