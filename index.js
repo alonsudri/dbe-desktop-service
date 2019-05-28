@@ -15,11 +15,6 @@ const fse = require('./node_modules/fs-extra');
 const unzipStream = require('./node_modules/unzip-stream');
 const lodash = require('./node_modules/lodash');
 
-// axios.interceptors.request.use(axiosHttpsProxy);
-// function setProxy() {
-//   axios.defaults.proxy = (props.proxy.data && props.proxy.data.host && props.proxy.data.port) ? props.proxy.data : false
-// }
-
 module.exports = function () {
   let ws;
   let allowReconnect = false;
@@ -59,6 +54,7 @@ module.exports = function () {
   this.init = function (Mds, Callback) {
     callback = Callback;
     Object.assign(MDS, Mds);
+    axios.defaults.proxy = (MDS.PROXY.data && MDS.PROXY.data.host && MDS.PROXY.data.port) ? MDS.PROXY.data : false;
     this.connect();
   };
   this.status = function () {
