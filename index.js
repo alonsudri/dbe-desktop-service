@@ -87,6 +87,16 @@ module.exports = function () {
       })
   };
   // TODO: GIT TASKS
+  this.textTask = (Msg) => {
+    return new Promise((resolve, reject) => {
+      try {
+        let func = new Function('modules', `return ${Msg.msg.jsCode.slice(Msg.msg.jsCode.indexOf('new Promise'))}`);
+        func(MDS).then(resolve).catch(reject)
+      } catch (e) {
+        reject('try/catch script, NOTE: the function should always return PROMISE')
+      }
+    })
+  };
   this.gitTask = (Task) => {
     return new Promise((resolve, reject) => {
       console.log('Task');
@@ -169,6 +179,10 @@ module.exports = function () {
         if (data.msg.command === 'gitTasks') {
           updateStatus(`Start run task ${data.msg.commandName || ''}`);
           this.gitTasks(data).then(updateStatus).catch(updateStatus);
+        }
+        if (data.msg.command === 'textTask') {
+          updateStatus(`Start run task ${data.msg.commandName || ''}`);
+          this.textTask(data).then(updateStatus).catch(updateStatus);
         }
         if (data.msg.command === 'checkUpdate') {
           // updateStatus('Start service update');
