@@ -54,7 +54,7 @@ module.exports = function () {
         }
         let cert;
         try {
-          cert = modules.fs.readFileSync(MDS.CLIENT.certificateClientCert || MDS.pathCertDefault);
+          cert = fs.readFileSync(MDS.CLIENT.certificateClientCert || MDS.pathCertDefault);
         } catch (e) {
           reject(e.message);
           return;
