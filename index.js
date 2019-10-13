@@ -13,7 +13,6 @@ const axiosHttpsProxy = require('./node_modules/axios-https-proxy');
 const WebSocket = require('./node_modules/ws');
 const fse = require('./node_modules/fs-extra');
 const unzipStream = require('./node_modules/unzip-stream');
-const lodash = require('./node_modules/lodash');
 
 module.exports = function () {
   let ws;
@@ -40,7 +39,6 @@ module.exports = function () {
     timeOut: timeOut,
     fse: fse,
     axios: axios,
-    _: lodash,
     unzipStream: unzipStream,
 
     pathKeyDefault: 'C:\\ProgramData\\Qlik\\Sense\\Repository\\Exported Certificates\\.Local Certificates\\client_key.pem',
