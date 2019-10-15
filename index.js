@@ -22,9 +22,7 @@ module.exports = function () {
   let callback;
 
   const MDS = {
-    // constants
-    CLIENT: null,
-    PROXY: null,
+    CONFIG: null,
     SERVER: null,
     VERSION: require('./package').version,
     DIR_HOME: null,
@@ -47,14 +45,14 @@ module.exports = function () {
       return new Promise((resolve, reject) => {
         let key;
         try {
-          key = fs.readFileSync(MDS.CLIENT.certificateClientKey || MDS.pathKeyDefault);
+          key = fs.readFileSync(MDS.CONFIG.user.certificateClientKey || MDS.pathKeyDefault);
         } catch (e) {
           reject(e.message);
           return;
         }
         let cert;
         try {
-          cert = fs.readFileSync(MDS.CLIENT.certificateClientCert || MDS.pathCertDefault);
+          cert = fs.readFileSync(MDS.CONFIG.user.certificateClientCert || MDS.pathCertDefault);
         } catch (e) {
           reject(e.message);
           return;
@@ -75,7 +73,7 @@ module.exports = function () {
           res.on('data', function (chunk) {
             resolve(chunk);
           });
-        }).on('error', function () {
+        }).on('error', function (e) {
           reject('Error get app names ' + e.message);
         })
       })
@@ -85,9 +83,9 @@ module.exports = function () {
         let data = JSON.stringify({
           serviceCommandID: ServiceCommandID,
           message: Status,
-          customerLicenseToken: this.CLIENT.customerLicenseToken,
-          engineServiceUserID: this.CLIENT.appUserID,
-          securityToken: this.CLIENT.securityToken,
+          customerLicenseToken: this.CONFIG.user.customerLicenseToken,
+          engineServiceUserID: this.CONFIG.user.appUserID,
+          securityToken: this.CONFIG.user.securityToken,
         });
         let req = https.request({
           hostname: 'api.databridge.ch',
@@ -111,7 +109,8 @@ module.exports = function () {
   this.init = function (Mds, Callback) {
     callback = Callback;
     Object.assign(MDS, Mds);
-    axios.defaults.proxy = (MDS.PROXY.data && MDS.PROXY.data.host && MDS.PROXY.data.port) ? MDS.PROXY.data : false;
+    axios.defaults.proxy = (MDS.CONFIG.proxy.host && MDS.CONFIG.proxy.port) ? MDS.CONFIG.proxy : false;
+    MDS.SERVER = MDS.CONFIG.user.serviceWebSocketURL || 'wss://db-engine-service.azurewebsites.net:443';
     this.connect();
   };
   this.handleErrorConnect = () => {
@@ -123,7 +122,6 @@ module.exports = function () {
       timeoutConnect = setTimeout(this.connect, 5000);
     }
   };
-
   this.textTask = (Msg) => {
     return new Promise((resolve, reject) => {
       try {
@@ -143,19 +141,18 @@ module.exports = function () {
       }
     })
   };
-
   this.connect = () => {
     allowReconnect = true;
-    if (MDS.PROXY && MDS.PROXY.host && MDS.PROXY.port) {
+    if (MDS.CONFIG.proxy.host && MDS.CONFIG.proxy.port) {
       ws = new WebSocket(MDS.SERVER, null, {
-        agent: new HttpsProxyAgent(MDS.PROXY),
+        agent: new HttpsProxyAgent(MDS.CONFIG.proxy),
         rejectUnauthorized: false
       });
     } else {
       ws = new WebSocket(MDS.SERVER, null, {rejectUnauthorized: false});
     }
     ws.onopen = function () {
-      ws.send(JSON.stringify({type: 'reg', id: MDS.CLIENT.appUserID}));
+      ws.send(JSON.stringify({type: 'reg', id: MDS.CONFIG.user.appUserID}));
       callback({type: 'app', msgType: 'isServiceConnect', msg: true});
     };
     ws.onmessage = (ev) => {
@@ -179,7 +176,6 @@ module.exports = function () {
     ws.onclose = this.handleErrorConnect;
     ws.onerror = this.handleErrorConnect;
   };
-
   this.destroy = () => {
     allowReconnect = false;
     callback({type: 'app', msgType: 'isServiceConnect', msg: false});
